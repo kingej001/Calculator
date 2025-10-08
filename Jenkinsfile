@@ -5,7 +5,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/kingej001/Calculator.git', branch: 'master'
+                git url: "https://github.com/kingej001/Calculator.git", branch: "master"
             }
         }
         stage('version check') {
