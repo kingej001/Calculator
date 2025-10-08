@@ -5,7 +5,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/kingej001/Calculator.git', branch: 'main'
+                git url: 'https://github.com/kingej001/Calculator.git', branch: 'master'
             }
         }
         stage('version check') {
@@ -60,7 +60,7 @@ pipeline {
 
         stage('docker run') {
                  steps {
-                     bat "docker run jebbaemmanuel1/calculator"
+                     bat "docker run -d -p 9090:9090 --name calculator jebbaemmanuel1/calculator"
                  }
         }
 
@@ -73,11 +73,11 @@ pipeline {
 
     }
     post {
-            always {
+           /** always {
                 mail to: 'ahmodolaitan03@gmail.com',
                     subject: "Completed Pipeline for: ${currentBuild.fullDisplayName}",
                     body: "Your build completed, please check: ${env.BUILD_URL}"
                 slackSend channel: '#test', color: 'green', message: "The pipeline ${currentBuild.fullDisplayName} result."
-            }
+            }**/
         }
 }
