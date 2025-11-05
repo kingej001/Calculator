@@ -11,6 +11,7 @@ pipeline {
         stage('version check') {
             steps {
                 bat "docker version"
+                bat "wsl -d Ubuntu ansible --version"
             }
         }
         stage('gradle build') {
@@ -69,6 +70,13 @@ pipeline {
                      bat "./gradlew acceptanceTest"
                  }
         }
+
+        stage('Deploy') {
+                         steps {
+                             bat "wsl -d Ubuntu ansible-playbook -i /home/emma/ansible/hosts calculator.yaml"
+                         }
+                }
+
 
 
     }
