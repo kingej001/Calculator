@@ -1,6 +1,6 @@
 pipeline {
     agent {
-    label "pipeline"
+        label "pipeline"
     }
     stages {
         stage('Checkout') {
@@ -15,73 +15,72 @@ pipeline {
             }
         }
         stage('gradle build') {
-                     steps {
-                         bat "./gradlew clean"
-                         bat "./gradlew build"
-                     }
-                }
+            steps {
+                bat "./gradlew clean"
+                bat "./gradlew build"
+            }
+        }
         stage("Code Coverage") {
-              steps {
-                  bat "./gradlew jacocoTestReport"
-                  publishHTML(target: [
-                                      allowMissing: false,
-                                      alwaysLinkToLastBuild: false,
-                                      keepAll: true,
-                                      reportDir: 'build/reports/jacoco/test/html',
-                                      reportFiles: 'index.html',
-                                      reportName: 'JaCoCo Report'
-                                  ])
-                  bat "./gradlew jacocoTestCoverageVerification"
-              }
+            steps {
+                bat "./gradlew jacocoTestReport"
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports/jacoco/test/html',
+                    reportFiles: 'index.html',
+                    reportName: 'JaCoCo Report'
+                ])
+                bat "./gradlew jacocoTestCoverageVerification"
+            }
         }
         stage("Static code analysis") {
-               steps {
-                   bat "./gradlew checkstyleMain"
-                   publishHTML(target: [
-                                      allowMissing: false,
-                                      alwaysLinkToLastBuild: false,
-                                      keepAll: true,
-                                      reportDir: 'build/reports/checkstyle',
-                                      reportFiles: 'main.html',
-                                      reportName: 'Checkstyle Report'
-                                  ])
-               }
+            steps {
+                bat "./gradlew checkstyleMain"
+                publishHTML(target: [
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: false,
+                    keepAll: true,
+                    reportDir: 'build/reports/checkstyle',
+                    reportFiles: 'main.html',
+                    reportName: 'Checkstyle Report'
+                ])
+            }
         }
         stage('docker build') {
-                 steps {
-                     bat "docker build -t jebbaemmanuel1/calculator ."
-                 }
+            steps {
+                bat "docker build -t jebbaemmanuel1/calculator ."
+            }
         }
-
         stage('docker push') {
-                 steps {
-                     bat "docker push jebbaemmanuel1/calculator"
-                 }
+            steps {
+                bat "docker push jebbaemmanuel1/calculator"
+            }
         }
-
         stage('docker run') {
-                 steps {
-                     bat "docker run -d -p 9090:9090 --name calculator jebbaemmanuel1/calculator"
-                 }
+            steps {
+                bat "docker run -d -p 9090:9090 --name calculator jebbaemmanuel1/calculator"
+            }
         }
-
         stage('Acceptance Test') {
-                 steps {
-                     bat "./gradlew acceptanceTest"
-                 }
+            steps {
+                bat "./gradlew acceptanceTest"
+            }
         }
         stage('Deploy') {
-                         steps {
-                             bat "wsl -d Ubuntu ansible-playbook -i /home/emma/ansible/hosts calculator.yaml"
-                         }
-                    }
+            steps {
+                bat "wsl -d Ubuntu ansible-playbook -i /home/emma/ansible/hosts calculator.yaml"
+            }
+        }
     }
-    /** post {
-           always {
-                mail to: 'ahmodolaitan03@gmail.com',
-                    subject: "Completed Pipeline for: ${currentBuild.fullDisplayName}",
-                    body: "Your build completed, please check: ${env.BUILD_URL}"
-                slackSend channel: '#test', color: 'green', message: "The pipeline ${currentBuild.fullDisplayName} result."
-
-        }  }**/
+    /**
+    post {
+        always {
+            mail to: 'ahmodolaitan03@gmail.com',
+                subject: "Completed Pipeline for: ${currentBuild.fullDisplayName}",
+                body: "Your build completed, please check: ${env.BUILD_URL}"
+            slackSend channel: '#test', color: 'green', message: "The pipeline ${currentBuild.fullDisplayName} result."
+        }
+    }
+    **/
 }
