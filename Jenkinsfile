@@ -1,86 +1,88 @@
 pipeline {
-    agent {
-        label "pipeline"
-    }
+    agent { label 'pipeline' }
+
     stages {
         stage('Checkout') {
             steps {
-                git url: "https://github.com/kingej001/Calculator.git", branch: "master"
+                git url: 'https://github.com/kingej001/Calculator.git', branch: 'master'
             }
         }
-        stage('version check') {
+
+        stage('Version Check') {
             steps {
-                bat "docker version"
-                bat "wsl -d Ubuntu ansible --version"
+                bat 'docker version'
+                bat 'wsl -d Ubuntu ansible --version'
             }
         }
-        stage('gradle build') {
+
+        stage('Gradle Build') {
             steps {
-                bat "./gradlew clean"
-                bat "./gradlew build"
+                bat 'gradlew.bat clean'
+                bat 'gradlew.bat build'
             }
         }
-        stage("Code Coverage") {
+
+        stage('Code Coverage') {
             steps {
-                bat "./gradlew jacocoTestReport"
-                publishHTML(target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
-                    reportDir: 'build/reports/jacoco/test/html',
-                    reportFiles: 'index.html',
-                    reportName: 'JaCoCo Report'
-                ])
-                bat "./gradlew jacocoTestCoverageVerification"
+                bat 'gradlew.bat jacocoTestReport'
+                script {
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: 'build/reports/jacoco/test/html',
+                        reportFiles: 'index.html',
+                        reportName: 'JaCoCo Report'
+                    ])
+                }
+                bat 'gradlew.bat jacocoTestCoverageVerification'
             }
         }
-        stage("Static code analysis") {
+
+        stage('Static Code Analysis') {
             steps {
-                bat "./gradlew checkstyleMain"
-                publishHTML(target: [
-                    allowMissing: false,
-                    alwaysLinkToLastBuild: false,
-                    keepAll: true,
-                    reportDir: 'build/reports/checkstyle',
-                    reportFiles: 'main.html',
-                    reportName: 'Checkstyle Report'
-                ])
+                bat 'gradlew.bat checkstyleMain'
+                script {
+                    publishHTML(target: [
+                        allowMissing: false,
+                        alwaysLinkToLastBuild: false,
+                        keepAll: true,
+                        reportDir: 'build/reports/checkstyle',
+                        reportFiles: 'main.html',
+                        reportName: 'Checkstyle Report'
+                    ])
+                }
             }
         }
-        stage('docker build') {
+
+        stage('Docker Build') {
             steps {
-                bat "docker build -t jebbaemmanuel1/calculator ."
+                bat 'docker build -t jebbaemmanuel1/calculator .'
             }
         }
-        stage('docker push') {
+
+        stage('Docker Push') {
             steps {
-                bat "docker push jebbaemmanuel1/calculator"
+                bat 'docker push jebbaemmanuel1/calculator'
             }
         }
-        stage('docker run') {
+
+        stage('Docker Run') {
             steps {
-                bat "docker run -d -p 9090:9090 --name calculator jebbaemmanuel1/calculator"
+                bat 'docker run -d -p 9090:9090 --name calculator jebbaemmanuel1/calculator'
             }
         }
+
         stage('Acceptance Test') {
             steps {
-                bat "./gradlew acceptanceTest"
+                bat 'gradlew.bat acceptanceTest'
             }
         }
+
         stage('Deploy') {
             steps {
-                bat "wsl -d Ubuntu ansible-playbook -i /home/emma/ansible/hosts calculator.yaml"
+                bat 'wsl -d Ubuntu ansible-playbook -i /home/emma/ansible/hosts calculator.yaml'
             }
         }
     }
-    /**
-    post {
-        always {
-            mail to: 'ahmodolaitan03@gmail.com',
-                subject: "Completed Pipeline for: ${currentBuild.fullDisplayName}",
-                body: "Your build completed, please check: ${env.BUILD_URL}"
-            slackSend channel: '#test', color: 'green', message: "The pipeline ${currentBuild.fullDisplayName} result."
-        }
-    }
-    **/
 }
